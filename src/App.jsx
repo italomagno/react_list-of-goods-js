@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import 'bulma/css/bulma.css';
 import './App.scss';
 
@@ -14,33 +15,90 @@ export const goodsFromServer = [
   'Garlic',
 ];
 
-export const App = () => (
-  <div className="section content">
-    <div className="buttons">
-      <button type="button" className="button is-info is-light">
-        Sort alphabetically
-      </button>
+export const App = () => {
+  const [goodsToSort, setGoodsToSort] = useState(goodsFromServer);
+  const [selectedOption, setSelectedOption] = useState("");
 
-      <button type="button" className="button is-success is-light">
-        Sort by length
-      </button>
+  const optionsToSort = [
+    { type: "Sort alphabetically", className: "is-info", isToAppear: true },
+    { type: "Sort by length", className: "is-success", isToAppear: true },
+    { type: "Reverse", className: "is-warning", isToAppear: true },
+    { type: "Reset", className: "is-danger", isToAppear: !checkIfArrayIsEqualsToFromServer() }
+  ];
 
-      <button type="button" className="button is-warning is-light">
-        Reverse
-      </button>
+  function handleGoodsAlphabetically() {
+    if(selectedOption === "Reverse") {
+    setGoodsToSort([...goodsToSort].sort((a, b) => a.localeCompare(b)).reverse())
 
-      <button type="button" className="button is-danger is-light">
-        Reset
-      </button>
+    } else {
+      setGoodsToSort([...goodsToSort].sort((a, b) => a.localeCompare(b)));
+    }
+
+    setSelectedOption("Sort alphabetically");
+  }
+
+  function handleSortGoodsByLength() {
+    setGoodsToSort([...goodsToSort].sort((a, b) =>  a.length - b.length));
+    setSelectedOption("Sort by length");
+  }
+
+  function handleReverseGoods() {
+    setGoodsToSort([...goodsToSort].reverse());
+    setSelectedOption("Reverse");
+  }
+
+  function handleGoodsToOriginal() {
+    setGoodsToSort(goodsFromServer);
+    setSelectedOption("");
+  }
+
+  function checkIfArrayIsEqualsToFromServer() {
+    return goodsToSort.every((good, index) => good === goodsFromServer[index]);
+  }
+
+  return (
+    <div className="section content">
+      <div className="buttons">
+        {
+          optionsToSort.map((option) => (
+            option.isToAppear &&
+            <button type="button"
+              onClick={() => {
+                setSelectedOption(option.type);
+                switch (option.type) {
+                  case "Sort alphabetically":
+                    handleGoodsAlphabetically();
+                    break;
+                  case "Sort by length":
+                    handleSortGoodsByLength();
+                    break;
+                  case "Reverse":
+                    handleReverseGoods();
+                    break;
+                  case "Reset":
+                    handleGoodsToOriginal();
+                    break;
+                  default:
+                    break;
+                }
+              }}
+              className={`button ${option.className} ${option.type === selectedOption ? "" : "is-light"}`}
+              key={option.type}
+              data-cy={option.type}
+            >
+              {option.type}
+            </button>
+          ))
+        }
+      </div>
+
+      <ul>
+        {
+          goodsToSort.map((good) => (
+            <li key={good} data-cy="Good">{good}</li>
+          ))
+        }
+      </ul>
     </div>
-
-    <ul>
-      <li data-cy="Good">Dumplings</li>
-      <li data-cy="Good">Carrot</li>
-      <li data-cy="Good">Eggs</li>
-      <li data-cy="Good">Ice cream</li>
-      <li data-cy="Good">Apple</li>
-      <li data-cy="Good">...</li>
-    </ul>
-  </div>
-);
+  );
+}
